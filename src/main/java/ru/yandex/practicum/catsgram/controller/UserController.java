@@ -77,6 +77,7 @@ public class UserController {
     }
 
     private boolean isContainsEmail(User user) {
+        //можно переписать проще, убрав map, т.к. метод equals переопределен в User только по полю email, но оставил так, вдруг в будущем equals поменяется
         return users.values().stream()
                 .map(User::getEmail)
                 .anyMatch(user.getEmail()::equals);
