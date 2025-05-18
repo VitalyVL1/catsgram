@@ -7,10 +7,7 @@ import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.model.User;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -67,11 +64,10 @@ public class UserService {
         return Optional.ofNullable(users.get(id));
     }
 
-    public User findUserByEmail(String email) {
+    public Optional<User> findUserByEmail(String email) {
         return users.values().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с email = %s не найден", email)));
+                .filter(user -> Objects.equals(user.getEmail(), email))
+                .findFirst();
     }
 
     // вспомогательный метод для генерации идентификатора нового поста

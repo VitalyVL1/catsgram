@@ -75,12 +75,11 @@ public class PostService {
         throw new NotFoundException("Пост с id = " + newPost.getId() + " не найден");
     }
 
-    public Post findPostById(long id) {
+    public Optional<Post> findPostById(long id) {
         return posts.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(id))
+                .filter(entry -> entry.getKey() == id)
                 .map(Map.Entry::getValue)
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException(String.format("Пост с id = %d не найден", id)));
+                .findFirst();
     }
 
     private long getNextId() {

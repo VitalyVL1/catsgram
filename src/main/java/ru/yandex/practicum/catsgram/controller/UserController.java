@@ -6,6 +6,7 @@ import ru.yandex.practicum.catsgram.model.User;
 import ru.yandex.practicum.catsgram.service.UserService;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -23,7 +24,8 @@ public class UserController {
     }
 
     @GetMapping("/{email}")
-    public User findByEmail(@PathVariable String email) {
+    @ResponseBody
+    public Optional<User> findByEmail(@PathVariable String email) {
         return userService.findUserByEmail(email);
     }
 
