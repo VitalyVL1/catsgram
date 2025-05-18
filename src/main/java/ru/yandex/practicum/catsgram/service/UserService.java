@@ -67,6 +67,13 @@ public class UserService {
         return Optional.ofNullable(users.get(id));
     }
 
+    public User findUserByEmail(String email) {
+        return users.values().stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с email = %s не найден", email)));
+    }
+
     // вспомогательный метод для генерации идентификатора нового поста
     private long getNextId() {
         long currentMaxId = users.keySet()
