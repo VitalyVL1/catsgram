@@ -8,10 +8,7 @@ import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.model.User;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 // Указываем, что класс PostService - является бином и его
 // нужно добавить в контекст приложения
@@ -25,8 +22,25 @@ public class PostService {
         this.userService = userService;
     }
 
-    public Collection<Post> findAll() {
-        return posts.values();
+    public Collection<Post> findAll(int size, String sort, int from) {
+        switch (SortOrder.from(sort)) {
+            case ASCENDING -> {
+                return posts.values().stream()
+                        .sorted(Comparator.comparing(Post::getPostDate))
+                        .skip(from)
+                        .limit(size)
+                        .toList();
+            }
+            case DESCENDING -> {
+                return posts.values().stream()
+                        .sorted(Comparator.comparing(Post::getPostDate).reversed())
+                        .skip(from)
+                        .limit(size)
+                        .toList();
+            }
+            default -> throw new ConditionsNotMetException(
+                    String.format("Неверный порядок сортировки: %s, выберете между asc, desc!", sort));
+        }
     }
 
     public Post create(Post post) {
@@ -76,5 +90,18 @@ public class PostService {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    public enum SortOrder {
+        ASCENDING, DESCENDING;
+
+        // Преобразует строку в элемент перечисления
+        public static SortOrder from(String order) {
+            return switch (order.toLowerCase()) {
+                case "ascending", "asc" -> ASCENDING;
+                case "descending", "desc" -> DESCENDING;
+                default -> null;
+            };
+        }
     }
 }
