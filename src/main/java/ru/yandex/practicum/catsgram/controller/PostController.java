@@ -27,7 +27,6 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    @ResponseBody
     public Optional<Post> findById(@PathVariable Long postId) {
         return postService.findPostById(postId);
     }

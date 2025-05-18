@@ -24,7 +24,6 @@ public class UserController {
     }
 
     @GetMapping("/{email}")
-    @ResponseBody
     public Optional<User> findByEmail(@PathVariable String email) {
         return userService.findUserByEmail(email);
     }
