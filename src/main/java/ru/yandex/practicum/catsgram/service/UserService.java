@@ -64,7 +64,7 @@ public class UserService {
         return Optional.ofNullable(users.get(id));
     }
 
-    public Optional<User> findUserByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return users.values().stream()
                 .filter(user -> Objects.equals(user.getEmail(), email))
                 .findFirst();

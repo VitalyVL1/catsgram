@@ -75,7 +75,7 @@ public class PostService {
         throw new NotFoundException("Пост с id = " + newPost.getId() + " не найден");
     }
 
-    public Optional<Post> findPostById(long id) {
+    public Optional<Post> findById(long id) {
         return posts.entrySet().stream()
                 .filter(entry -> entry.getKey() == id)
                 .map(Map.Entry::getValue)
