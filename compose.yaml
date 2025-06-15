@@ -28,3 +28,50 @@ services:
       interval: 5s
       # количество попыток
       retries: 10
+  # ещё один сервис
+  db-init:
+    image: postgres:16.1
+    container_name: db-init
+    # секция для указания зависимостей от других сервисов
+    depends_on:
+      # указываем, что этот сервис зависит от сервиса с именем db
+      db:
+        # указываем, что условием запуска будет момент, когда
+        # сервис db будет в «здоровом» состоянии
+        condition: service_healthy
+    entrypoint:
+      #Запускает оболочку Bash
+      - bash
+      #ключ Bash. Сообщает, что нужно выполнить указанную далее команду
+      - -c
+      #символ относится не к команде, а к формату yaml-файлов. Он позволяет разместить текст на нескольких строках.
+      #При этом, когда файл будет обрабатываться, все строки будут преобразованы в одну.
+      #set -e указывает Bash, что в случае ошибки нужно завершить обработку скрипта.
+      #psql postgresql://Подключение к БД
+      #<<-EOSQL … EOSQL -  это специальный способ сообщить Bash, что между этими тегами будет единый текстовый блок
+      #(вместо EOSQL может быть любое название, главное что это отображает начало и конец блока)
+      - |
+        set -e
+        psql postgresql://dbuser:12345@db:5432/catsgram -v ON_ERROR_STOP=1 <<-EOSQL
+          CREATE TABLE IF NOT EXISTS users (
+            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            username VARCHAR(40) NOT NULL,
+            email VARCHAR(255) NOT NULL,
+            password VARCHAR(40) NOT NULL,
+            registration_date TIMESTAMP WITH TIME ZONE NOT NULL
+          );
+        
+          CREATE TABLE IF NOT EXISTS posts (
+            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            author_id BIGINT NOT NULL REFERENCES users(id),
+            description TEXT,
+            post_date TIMESTAMP WITH TIME ZONE NOT NULL
+          );
+        
+          CREATE TABLE IF NOT EXISTS image_storage (
+            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            original_name VARCHAR(255),
+            file_path VARCHAR(1024),
+            post_id BIGINT NOT NULL REFERENCES posts(id)
+          );
+        EOSQL
