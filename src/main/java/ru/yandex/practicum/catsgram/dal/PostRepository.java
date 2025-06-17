@@ -13,7 +13,7 @@ import java.util.Optional;
 public class PostRepository extends BaseRepository<Post> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM posts";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM posts WHERE id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO posts (author_id, description, post_date) " +
+    private static final String INSERT_QUERY = "INSERT INTO posts(author_id, description, post_date) " +
             "VALUES (?, ?, ?) returning id";
     private static final String UPDATE_QUERY = "UPDATE posts SET description = ?, post_date = ? WHERE id = ?";
 
@@ -34,7 +34,7 @@ public class PostRepository extends BaseRepository<Post> {
                 INSERT_QUERY,
                 post.getAuthor().getId(),
                 post.getDescription(),
-                post.getPostDate());
+                Timestamp.from(post.getPostDate()));
         post.setId(id);
         return post;
     }

@@ -51,7 +51,7 @@ public class PostController {
 
     @PutMapping("/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public PostDto update(@RequestParam long postId, @RequestBody UpdatePostRequest post) {
+    public PostDto update(@PathVariable long postId, @RequestBody UpdatePostRequest post) {
         return postService.update(postId, post);
     }
 }
