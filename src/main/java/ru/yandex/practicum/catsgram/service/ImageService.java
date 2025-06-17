@@ -98,7 +98,12 @@ public class ImageService {
                     StringUtils.getFilenameExtension(file.getOriginalFilename()));
 
             // формирование пути для сохранения файла с учётом идентификаторов автора и поста
-            Path uploadPath = Paths.get(imageDirectory, String.valueOf(post.getAuthorId()), post.getId().toString());
+            Path uploadPath = Paths.get(
+                    imageDirectory,
+                    String.valueOf(post.getAuthor().getId()),
+                    post.getId().toString()
+            );
+
             Path filePath = uploadPath.resolve(uniqueFileName);
 
             // создаём директории, если они ещё не созданы
