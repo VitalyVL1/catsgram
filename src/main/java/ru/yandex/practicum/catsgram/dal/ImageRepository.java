@@ -21,13 +21,13 @@ public class ImageRepository extends BaseRepository<Image> {
     }
 
     public Image save(Image image) {
-        long postId = insert(
+        long Id = insert(
                 INSERT_IMAGE_QUERY,
                 image.getOriginalFileName(),
                 image.getFilePath(),
                 image.getPostId()
         );
-        image.setId(postId);
+        image.setId(Id);
         return image;
     }
 

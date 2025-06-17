@@ -13,18 +13,17 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/posts/{postId}/images")
 public class ImageController {
     private final ImageService imageService;
 
-    @GetMapping
+    @GetMapping("/posts/{postId}/images")
     @ResponseStatus(HttpStatus.OK)
     public List<ImageDto> getPostImages(@PathVariable("postId") long postId) {
         return imageService.getPostImages(postId);
     }
 
+    @PostMapping("/posts/{postId}/images")
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
     public List<ImageUploadResponse> addPostImage(@PathVariable("postId") long postId,
                                                   @RequestParam("image") List<MultipartFile> files) {
         return imageService.saveImages(postId, files);

@@ -12,7 +12,7 @@ import java.nio.file.Path;
 public class ImageMapper {
     public static Image mapToImage(long postId, Path filePath, String originalFileName) {
         Image image = new Image();
-        image.setId(postId);
+        image.setPostId(postId);
         image.setFilePath(filePath.toString());
         image.setOriginalFileName(originalFileName);
         return image;
