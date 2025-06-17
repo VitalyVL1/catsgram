@@ -10,7 +10,7 @@ import java.util.List;
 @EqualsAndHashCode(of = {"id"})
 public class Post {
     private Long id;
-    private long authorId;
+    private User author;
     private String description;
     private Instant postDate;
     private List<Image> images;

@@ -10,7 +10,7 @@ import java.util.List;
 public class PostDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long id;
-    private long authorId;
+    private UserDto author;
     private String description;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Instant postDate;

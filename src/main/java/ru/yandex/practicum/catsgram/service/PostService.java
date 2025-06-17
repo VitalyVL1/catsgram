@@ -1,21 +1,23 @@
 package ru.yandex.practicum.catsgram.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.catsgram.dal.ImageRepository;
 import ru.yandex.practicum.catsgram.dal.PostRepository;
 import ru.yandex.practicum.catsgram.dal.UserRepository;
+import ru.yandex.practicum.catsgram.dto.NewPostRequest;
 import ru.yandex.practicum.catsgram.dto.PostDto;
 import ru.yandex.practicum.catsgram.dto.UpdatePostRequest;
-import ru.yandex.practicum.catsgram.dto.UpdateUserRequest;
 import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.mapper.PostMapper;
+import ru.yandex.practicum.catsgram.model.Image;
 import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.model.User;
 
-import java.time.Instant;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 // Указываем, что класс PostService - является бином и его
 // нужно добавить в контекст приложения
@@ -24,6 +26,7 @@ import java.util.*;
 public class PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final ImageRepository imageRepository;
 
     public Collection<PostDto> findAll(int size, String sort, int from) {
         switch (SortOrder.from(sort)) {
@@ -48,18 +51,20 @@ public class PostService {
         }
     }
 
-    public PostDto create(Post post) {
-        if (post.getDescription() == null || post.getDescription().isBlank()) {
+    public PostDto create(NewPostRequest newPostRequest) {
+        if (newPostRequest.getDescription() == null || newPostRequest.getDescription().isBlank()) {
             throw new ConditionsNotMetException("Описание не может быть пустым");
         }
 
-        Optional<User> user = userRepository.findById(post.getAuthorId());
+        User author = userRepository.findById(newPostRequest.getAuthorId())
+                .orElseThrow(() ->
+                        new ConditionsNotMetException("Автор с id = " + newPostRequest.getAuthorId() + " не найден"));
 
-        if (user.isEmpty()) {
-            throw new ConditionsNotMetException("Автор с id = " + post.getAuthorId() + " не найден");
-        }
+        Post post = PostMapper.mapToPost(newPostRequest, author);
 
-        return PostMapper.mapToPostDto(postRepository.save(post));
+        postRepository.save(post);
+
+        return PostMapper.mapToPostDto(post);
     }
 
     public PostDto update(long postId, UpdatePostRequest request) {
@@ -76,9 +81,18 @@ public class PostService {
     }
 
     public PostDto findById(long postId) {
-        return postRepository.findById(postId)
-                .map(PostMapper::mapToPostDto)
-                .orElseThrow(()-> new NotFoundException("Пост не найден с ID: " + postId));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("Пост с идентификатором " + postId + " не найден."));
+
+        User author = userRepository.findById(post.getAuthor().getId())
+                .orElseThrow(() -> new RuntimeException("Автор поста не найден"));
+
+        List<Image> images = imageRepository.findByPostId(postId);
+
+        post.setAuthor(author);
+        post.setImages(images);
+
+        return PostMapper.mapToPostDto(post);
     }
 
     public enum SortOrder {

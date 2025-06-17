@@ -9,7 +9,6 @@ import ru.yandex.practicum.catsgram.dto.UserDto;
 import ru.yandex.practicum.catsgram.service.UserService;
 
 import java.util.Collection;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

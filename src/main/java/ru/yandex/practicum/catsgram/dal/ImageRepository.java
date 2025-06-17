@@ -5,7 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.catsgram.model.Image;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -35,7 +35,7 @@ public class ImageRepository extends BaseRepository<Image> {
         return findOne(FIND_BY_ID_QUERY, imageId);
     }
 
-    public Collection<Image> findByPostId(long postId) {
+    public List<Image> findByPostId(long postId) {
         return findMany(FIND_BY_POST_ID_QUERY, postId);
     }
 
