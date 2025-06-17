@@ -11,6 +11,7 @@ import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.mapper.UserMapper;
 import ru.yandex.practicum.catsgram.model.User;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,7 +47,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + userId));
     }
 
-    public List<UserDto> getUsers() {
+    public Collection<UserDto> getUsers() {
         return userRepository.findAll()
                 .stream()
                 .map(UserMapper::mapToUserDto)
