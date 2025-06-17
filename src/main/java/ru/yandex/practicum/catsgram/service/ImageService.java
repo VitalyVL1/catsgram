@@ -5,43 +5,48 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import ru.yandex.practicum.catsgram.dal.ImageRepository;
+import ru.yandex.practicum.catsgram.dal.PostRepository;
+import ru.yandex.practicum.catsgram.dto.ImageDto;
+import ru.yandex.practicum.catsgram.dto.ImageUploadResponse;
+import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 import ru.yandex.practicum.catsgram.exception.ImageFileException;
 import ru.yandex.practicum.catsgram.exception.NotFoundException;
+import ru.yandex.practicum.catsgram.mapper.ImageMapper;
 import ru.yandex.practicum.catsgram.model.Image;
 import ru.yandex.practicum.catsgram.model.ImageData;
 import ru.yandex.practicum.catsgram.model.Post;
-import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ImageService {
-    private final PostService postService;
-    private final Map<Long, Image> images = new HashMap<>();
+    private final PostRepository postRepository;
+    private final ImageRepository imageRepository;
 
     @Value("${catsgram.image-directory}")
     private String imageDirectory;
 
 
     // получение данных об изображениях указанного поста
-    public List<Image> getPostImages(long postId) {
-        return images.values()
+    public List<ImageDto> getPostImages(long postId) {
+        return imageRepository.findByPostId(postId)
                 .stream()
-                .filter(image -> image.getPostId() == postId)
-                .collect(Collectors.toList());
+                .map(image -> {
+                    byte[] bytes = loadFile(image);
+                    return ImageMapper.mapToImageDto(image, bytes);
+                }).collect(Collectors.toList());
     }
 
     // сохранение списка изображений, связанных с указанным постом
-    public List<Image> saveImages(long postId, List<MultipartFile> files) {
+    public List<ImageUploadResponse> saveImages(long postId, List<MultipartFile> files) {
         return files.stream()
                 .map(file -> saveImage(postId, file))
                 .collect(Collectors.toList());
@@ -49,10 +54,8 @@ public class ImageService {
 
     // загружаем данные указанного изображения с диска
     public ImageData getImageData(long imageId) {
-        if (!images.containsKey(imageId)) {
-            throw new NotFoundException("Изображение с id = " + imageId + " не найдено");
-        }
-        Image image = images.get(imageId);
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new NotFoundException("Изображение с id = " + imageId + " не найдено"));
         // загрузка файла с диска
         byte[] data = loadFile(image);
 
@@ -75,27 +78,16 @@ public class ImageService {
     }
 
     // сохранение отдельного изображения, связанного с указанным постом
-    private Image saveImage(long postId, MultipartFile file) {
-        Post post = postService.findById(postId)
+    private ImageUploadResponse saveImage(long postId, MultipartFile file) {
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ConditionsNotMetException("Указанный пост не найден"));
 
         // сохраняем изображение на диск и возвращаем путь к файлу
         Path filePath = saveFile(file, post);
 
-        // создаём объект для хранения данных изображения
-        long imageId = getNextId();
+        Image image = imageRepository.save(ImageMapper.mapToImage(postId, filePath, file.getOriginalFilename()));
 
-        // создание объекта изображения и заполнение его данными
-        Image image = new Image();
-        image.setId(imageId);
-        image.setFilePath(filePath.toString());
-        image.setPostId(postId);
-        // запоминаем название файла, которое было при его передаче
-        image.setOriginalFileName(file.getOriginalFilename());
-
-        images.put(imageId, image);
-
-        return image;
+        return ImageMapper.mapToImageUploadResponse(image);
     }
 
     // сохранение файла изображения
@@ -120,15 +112,5 @@ public class ImageService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    // вспомогательный метод для генерации идентификатора нового поста
-    private long getNextId() {
-        long currentMaxId = images.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 }

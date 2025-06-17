@@ -14,7 +14,7 @@ public class PostRepository extends BaseRepository {
     private static final String FIND_ALL_QUERY = "SELECT * FROM post";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM post WHERE id = ?";
     private static final String INSERT_QUERY = "INSERT INTO post (id, author_id, description, post_date) " +
-            "VALUES (?, ?, ?)";
+            "VALUES (?, ?, ?) returning id";
     private static final String UPDATE_QUERY = "UPDATE post SET author_id = ?, description = ? WHERE id = ?";
 
     public PostRepository(JdbcTemplate jdbc,  RowMapper<Post> mapper) {
