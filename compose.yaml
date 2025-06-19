@@ -75,3 +75,20 @@ services:
             post_id BIGINT NOT NULL REFERENCES posts(id)
           );
         EOSQL
+  # запуск приложения после старта БД
+  app:
+    image: openjdk:21-jdk-slim
+    container_name: catsgram-app
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    volumes:
+      - ./target:/app
+    working_dir: /app
+    command: java -jar catsgram-1.0-SNAPSHOT.jar
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/catsgram
+      SPRING_DATASOURCE_USERNAME: dbuser
+      SPRING_DATASOURCE_PASSWORD: 12345
